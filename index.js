@@ -1,7 +1,7 @@
 var fs = require('fs')
   , lib = require('./')
 
-function versions (dir, cb) {
+function catversions (dir, cb) {
   var versionDict = {}
     , file
 
@@ -25,4 +25,4 @@ function versions (dir, cb) {
   })
 }
 
-module.exports = versions
+module.exports = catversions

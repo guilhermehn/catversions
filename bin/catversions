@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-var versions = require('../')
+var catversions = require('../')
   , colors = require('colors')
   , versionRegex = /\d+\.\d+\.\d+/
   , groupDev = process.argv.indexOf('--dev') > -1
@@ -33,7 +33,7 @@ function leftPadding (keys) {
   }
 }
 
-versions('.', function (dirs) {
+catversions('.', function (dirs) {
   var keys = Object.keys(dirs)
     , projectsPadding = rightPadding(keys)
     , versionsPadding
