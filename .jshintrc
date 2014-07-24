@@ -1,0 +1,9 @@
+{
+  "laxcomma": true,
+  "strict": false,
+  "node": true,
+  "asi": true,
+  "globals": {
+    "colors": true
+  }
+}

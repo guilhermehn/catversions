@@ -1,0 +1,75 @@
+#!/usr/bin/env node
+
+var versions = require('../')
+  , colors = require('colors')
+  , versionRegex = /\d+\.\d+\.\d+/
+  , groupDev = process.argv.indexOf('--dev') > -1
+
+function largest (keys) {
+  var last = keys.slice().sort(function (a, b) {
+    return a.length - b.length
+  })[keys.length - 1]
+
+  return last ? last.length : 0
+}
+
+function whitespace (length) {
+  return (new Array(length)).join(' ')
+}
+
+function rightPadding (keys) {
+  var l = largest(keys)
+
+  return function (key) {
+    return key + whitespace(1 + l - key.length)
+  }
+}
+
+function leftPadding (keys) {
+  var l = largest(keys)
+
+  return function (key) {
+    return whitespace(1 + l - key.length) + key
+  }
+}
+
+versions('.', function (dirs) {
+  var keys = Object.keys(dirs)
+    , projectsPadding = rightPadding(keys)
+    , versionsPadding
+    , vs
+    , v
+    , devVersion
+    , devKeys = []
+
+  vs = keys.map(function (key) {
+    var dev = dirs[key].split(versionRegex)[1]
+    return dirs[key].replace(dev, '').replace(/\.$/, '')
+  })
+
+  versionsPadding = leftPadding(vs)
+
+  if (groupDev) {
+    keys = keys
+      .filter(function (key) {
+        var hasDev = dirs[key].replace(versionRegex, '').length > 0
+
+        if (hasDev) {
+          devKeys.push(key)
+        }
+
+        return !hasDev
+      })
+      .sort()
+
+    devKeys.sort()
+  }
+
+  keys
+    .concat(devKeys)
+    .forEach(function (dir) {
+      devVersion = dirs[dir].split(versionRegex)[1]
+      v = dirs[dir].replace(devVersion, '')
+      console.log(projectsPadding(dir).cyan + ' ' + versionsPadding(v) + devVersion.red)
+    })
+})
