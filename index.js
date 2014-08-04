@@ -1,27 +1,40 @@
 var fs = require('fs')
-  , lib = require('./')
+  , async = require('async')
+  , lib = require('./lib')
+  , thunkify = require('thunkify')
+  , util = require('util')
+  , stat = thunkify(fs.stat)
 
 function catversions (dir, cb) {
-  var versionDict = {}
-    , file
+  var versions = {}
 
   fs.readdir(dir, function (err, data) {
-    if (err) {
-      throw err
-    }
+    if (err) cb(err, data)
 
-    data.forEach(function (folder) {
-      if (fs.statSync(folder).isDirectory()) {
-        if (fs.readdirSync(folder).indexOf('version') > -1) {
-          file = folder + '/version'
-          if (fs.existsSync(file) && fs.statSync(file).isFile()) {
-            versionDict[folder] = fs.readFileSync(file, 'utf-8').replace('\n', '')
+    async.filter(data, lib.isDirectory, function (folders) {
+      async.filter(folders, lib.hasVersionFile, function (projectFolders) {
+        var versionPath = projectFolders.map(function (folder) {
+          return folder + '/version'
+        })
+
+        async.map(versionPath, lib.attachVersion, function (err, result) {
+          if (err) {
+            cb(err)
+            return
           }
-        }
-      }
-    })
 
-    cb(versionDict)
+          result.forEach(function (file) {
+            Object
+              .keys(file)
+              .forEach(function (key) {
+                versions[key] = file[key]
+              })
+          })
+
+          cb(null, versions)
+        })
+      })
+    })
   })
 }
 
