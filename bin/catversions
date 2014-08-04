@@ -4,50 +4,25 @@ var catversions = require('../')
   , colors = require('colors')
   , versionRegex = /\d+\.\d+\.\d+/
   , groupDev = process.argv.indexOf('--dev') > -1
+  , lib = require('../lib')
 
-function largest (keys) {
-  var last = keys.slice().sort(function (a, b) {
-    return a.length - b.length
-  })[keys.length - 1]
+catversions('.', function (err, dirs) {
+  if (err) throw err
 
-  return last ? last.length : 0
-}
-
-function whitespace (length) {
-  return (new Array(length)).join(' ')
-}
-
-function rightPadding (keys) {
-  var l = largest(keys)
-
-  return function (key) {
-    return key + whitespace(1 + l - key.length)
-  }
-}
-
-function leftPadding (keys) {
-  var l = largest(keys)
-
-  return function (key) {
-    return whitespace(1 + l - key.length) + key
-  }
-}
-
-catversions('.', function (dirs) {
   var keys = Object.keys(dirs)
-    , projectsPadding = rightPadding(keys)
+    , projectsPadding = lib.rightPadding(keys)
+    , devKeys = []
     , versionsPadding
     , vs
     , v
     , devVersion
-    , devKeys = []
 
   vs = keys.map(function (key) {
     var dev = dirs[key].split(versionRegex)[1]
     return dirs[key].replace(dev, '').replace(/\.$/, '')
   })
 
-  versionsPadding = leftPadding(vs)
+  versionsPadding = lib.leftPadding(vs)
 
   if (groupDev) {
     keys = keys
