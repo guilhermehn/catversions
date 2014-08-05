@@ -1,34 +1,48 @@
+/**
+ * Dependencies
+ */
+
 var fs = require('fs')
   , async = require('async')
   , lib = require('./lib')
-  , thunkify = require('thunkify')
-  , util = require('util')
-  , stat = thunkify(fs.stat)
 
-function catversions (dir, cb) {
-  var versions = {}
+/**
+ * Main function
+ */
 
-  fs.readdir(dir, function (err, data) {
-    if (err) cb(err, data)
+function catversions (root, cb) {
 
-    async.filter(data, lib.isDirectory, function (folders) {
-      async.filter(folders, lib.hasVersionFile, function (projectFolders) {
-        var versionPath = projectFolders.map(function (folder) {
-          return folder + '/version'
-        })
+  // Read the root folder
+  fs.readdir(root, function (err, data) {
 
-        async.map(versionPath, lib.attachVersion, function (err, result) {
+    // Pass error to callback
+    if (err) cb(err, null)
+
+    // Add path delimiter if there's none
+    if (root.indexOf(/\/$/) === -1) {
+      root += '/'
+    }
+
+    // Filter for directories
+    async.filter(data, lib.isDirectory.bind(this, root), function (folders) {
+
+      // Filter for directories with version file inside
+      async.filter(folders, lib.hasVersionFile.bind(this, root), function (projectFolders) {
+
+        // Read version files
+        async.map(projectFolders, lib.attachVersion.bind(this, root), function (err, result) {
+
+          // Pass error to callback
           if (err) {
-            cb(err)
+            cb(err, null)
             return
           }
 
+          // `Folder -> Version` hash
+          var versions = {}
+
           result.forEach(function (file) {
-            Object
-              .keys(file)
-              .forEach(function (key) {
-                versions[key] = file[key]
-              })
+            versions[file[0]] = file[1]
           })
 
           cb(null, versions)
@@ -37,5 +51,9 @@ function catversions (dir, cb) {
     })
   })
 }
+
+/**
+ * Exports
+ */
 
 module.exports = catversions
