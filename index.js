@@ -1,28 +1,59 @@
+/**
+ * Dependencies
+ */
+
 var fs = require('fs')
-  , lib = require('./')
+  , async = require('async')
+  , lib = require('./lib')
 
-function catversions (dir, cb) {
-  var versionDict = {}
-    , file
+/**
+ * Main function
+ */
 
-  fs.readdir(dir, function (err, data) {
-    if (err) {
-      throw err
+function catversions (root, cb) {
+
+  // Read the root folder
+  fs.readdir(root, function (err, data) {
+
+    // Pass error to callback
+    if (err) cb(err, null)
+
+    // Add path delimiter if there's none
+    if (root.indexOf(/\/$/) === -1) {
+      root += '/'
     }
 
-    data.forEach(function (folder) {
-      if (fs.statSync(folder).isDirectory()) {
-        if (fs.readdirSync(folder).indexOf('version') > -1) {
-          file = folder + '/version'
-          if (fs.existsSync(file) && fs.statSync(file).isFile()) {
-            versionDict[folder] = fs.readFileSync(file, 'utf-8').replace('\n', '')
-          }
-        }
-      }
-    })
+    // Filter for directories
+    async.filter(data, lib.isDirectory.bind(this, root), function (folders) {
 
-    cb(versionDict)
+      // Filter for directories with version file inside
+      async.filter(folders, lib.hasVersionFile.bind(this, root), function (projectFolders) {
+
+        // Read version files
+        async.map(projectFolders, lib.attachVersion.bind(this, root), function (err, result) {
+
+          // Pass error to callback
+          if (err) {
+            cb(err, null)
+            return
+          }
+
+          // `Folder -> Version` hash
+          var versions = {}
+
+          result.forEach(function (file) {
+            versions[file[0]] = file[1]
+          })
+
+          cb(null, versions)
+        })
+      })
+    })
   })
 }
+
+/**
+ * Exports
+ */
 
 module.exports = catversions
