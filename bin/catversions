@@ -1,114 +1,71 @@
 #!/usr/bin/env node
 
 // Dependencies
-var catversions = require('../')
-  , lib = require('../lib')
-  , colors = require('colors')
-  , program = require('commander')
-  , versionRg = /\d+\.\d+\.\d+/
-  , dotRegex = /\.$/
-  , path
+var catversions = require('../');
+var lib = require('../lib');
+var colors = require('colors');
+var program = require('commander');
+var versionRg = /\d+\.\d+\.\d+/;
+var dotRegex = /\.$/;
+var path;
 
 // Args parse
 program
   .version(require('../package.json').version)
   .option('-s, --sort', 'Sort by dev versions')
-  .parse(process.argv)
+  .parse(process.argv);
 
 // Defaults to actual path
-path = program.args[0] || '.'
+path = program.args[0] || '.';
 
 catversions(path, function (err, versions) {
-  if (err) throw err
+  if (err) {
+    throw err;
+  }
 
-  var projects = Object.keys(versions)
-    , projectsPadding = lib.rightPadding(projects)
-    , dev = []
-    , devVersions = {}
-    , semVersions
-    , versionsPadding
+  var projects = Object.keys(versions);
+  var projectsPadding = lib.rightPadding(projects);
+  var dev = [];
+  var devVersions = {};
+  var semVersions;
+  var versionsPadding;
 
   // Get only the semversion format to determine
   // the left padding when printing
   semVersions = projects.map(function mapProjects (project) {
-    var projectVersion = versions[project].split(versionRg)
+    var projectVersion = versions[project].split(versionRg);
 
-    devVersions[project] = projectVersion[1]
+    devVersions[project] = projectVersion[1];
 
     return versions[project]
       .replace(projectVersion[1], '')
-      .replace(dotRegex, '')
+      .replace(dotRegex, '');
   })
 
   // Get left padding function
-  versionsPadding = lib.leftPadding(semVersions)
+  versionsPadding = lib.leftPadding(semVersions);
 
   if (program.sort) {
     projects = projects
       .filter(function filterProjects (project) {
-        var hasDev = !!devVersions[project]
+        var hasDev = !!devVersions[project];
 
         if (hasDev) {
-          dev.push(project)
+          dev.push(project);
         }
 
-        return !hasDev
+        return !hasDev;
       })
-      .sort()
+      .sort();
 
-    dev.sort()
+    dev.sort();
   }
 
   projects
     .concat(dev)
     .forEach(function logEach (project) {
-      var devVersion = devVersions[project]
-        , version = versions[project].replace(devVersion, '')
-      console.log(projectsPadding(project).cyan + ' ' + versionsPadding(version) + (devVersion && devVersion.length ? devVersion.red : ''))
-    })
-
-  /*projects
-    .concat(devVersions)
-    .forEach(function (project) {
-
-    })*/
-
-  /*var keys = Object.keys(dirs)
-    , projectsPadding = lib.rightPadding(keys)
-    , devVersions = []
-    , versionsPadding
-    , vs
-
-  vs = keys.map(function (key) {
-    return dirs[key]
-      .replace(dirs[key].split(versionRg)[1], '')
-      .replace(dotRegex, '')
-  })
-
-  versionsPadding = lib.leftPadding(vs)
-
-  if (program.sort) {
-    keys = keys
-      .filter(function (key) {
-        var hasDev = dirs[key].match(versionRg).length > 2
-
-        if (hasDev) {
-          devVersions.push(key)
-        }
-
-        return !hasDev
-      })
-      .sort()
-
-    devVersions.sort()
-  }
-
-  keys
-    .concat(devVersions)
-    .forEach(function (dir) {
-      var devVersion = dirs[dir].split(versionRg)[1]
-        , v = dirs[dir].replace(devVersion, '')
-
-      console.log(projectsPadding(dir).cyan + ' ' + versionsPadding(v) + devVersion.red)
-    })*/
-})
+      var devVersion = devVersions[project];
+      var version = versions[project].replace(devVersion, '');
+      console.log(projectsPadding(project).cyan + ' ' + versionsPadding(version) + (devVersion && devVersion.length ? devVersion.red : ''));
+    });
+});
