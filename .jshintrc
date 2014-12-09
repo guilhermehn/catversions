@@ -7,6 +7,12 @@
   "evil": false,
   "noarg": true,
   "eqeqeq": true,
+  "trailing": true,
+  "latedef": true,
+  "loopfunc": false,
+  "newcap": true,
+  "noempty": true,
+  "onevar": false,
   "globals": {
     "colors": true
   }
