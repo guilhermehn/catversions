@@ -15,6 +15,22 @@
   "bin": {
     "catversions": "./bin/catversions"
   },
+  "config": {
+    "reporter": "./node_modules/jshint-stylish/stylish.js",
+    "ghooks": {
+      "pre-commit": "npm run lint"
+    }
+  },
+  "scripts": {
+    "lint": "jshint index.js **.js --reporter=$npm_package_config_reporter",
+    "build": "npm run lint",
+    "watch": "nodemon -q --exec 'npm run build'"
+  },
   "author": "Guilherme Nagatomo",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "ghooks": "^0.2.2",
+    "jshint": "^2.5.10",
+    "jshint-stylish": "^1.0.0"
+  }
 }
