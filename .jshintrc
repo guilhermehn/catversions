@@ -1,8 +1,12 @@
 {
-  "laxcomma": true,
   "strict": false,
+  "debug": false,
+  "boss": false,
   "node": true,
-  "asi": true,
+  "curly": true,
+  "evil": false,
+  "noarg": true,
+  "eqeqeq": true,
   "globals": {
     "colors": true
   }
